@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hubwünsche – Weltweite Flughafen-Prioritäten</title>
+<meta name="description" content="Wähle deine 10 wichtigsten Flughafen-Hubs auf der Weltkarte. Je mehr Spieler einen Hub wählen, desto größer erscheint er." />
+
+<!-- Leaflet (OpenStreetMap-Karten, kostenlos & ohne API-Key) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<style>
+  :root{
+    --bg:#0f172a;            /* slate-900 */
+    --panel:#ffffff;
+    --panel-2:#f8fafc;
+    --ink:#0f172a;
+    --ink-soft:#475569;
+    --ink-faint:#94a3b8;
+    --line:#e2e8f0;
+    --brand:#f97316;        /* orange-500 */
+    --brand-dark:#ea580c;
+    --accent:#0ea5e9;       /* sky-500 */
+    --accent-dark:#0284c7;
+    --good:#16a34a;
+    --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.08);
+    --radius:14px;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Header ---------- */
+  header.app{
+    color:#fff;
+    padding:22px 22px 18px;
+    max-width:1320px;margin:0 auto;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  header.app h1{
+    margin:0;font-size:1.7rem;letter-spacing:-.02em;font-weight:800;
+    display:flex;align-items:center;gap:10px;
+  }
+  header.app h1 .logo{font-size:1.5rem}
+  header.app p{margin:6px 0 0;color:#cbd5e1;font-size:.95rem;max-width:640px}
+  .status{
+    font-size:.78rem;color:#cbd5e1;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;white-space:nowrap;
+    display:flex;align-items:center;gap:7px;
+  }
+  .status .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-faint);box-shadow:0 0 0 3px rgba(148,163,184,.25)}
+  .status.live .dot{background:var(--good);box-shadow:0 0 0 3px rgba(22,163,74,.25)}
+  .status.demo .dot{background:var(--brand);box-shadow:0 0 0 3px rgba(249,115,22,.25)}
+
+  /* ---------- Layout ---------- */
+  main{
+    max-width:1320px;margin:0 auto;padding:0 22px 40px;
+    display:grid;grid-template-columns:1fr 400px;gap:18px;align-items:start;
+  }
+  @media (max-width:1000px){
+    main{grid-template-columns:1fr}
+  }
+
+  .card{
+    background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);
+    border:1px solid rgba(15,23,42,.04);overflow:hidden;
+  }
+  .card-head{
+    padding:14px 16px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .card-head h2{margin:0;font-size:1rem;font-weight:700;letter-spacing:-.01em}
+  .card-head .sub{font-size:.78rem;color:var(--ink-faint)}
+
+  /* ---------- Map ---------- */
+  #map{height:620px;width:100%;background:#e8eef4}
+  @media (max-width:1000px){#map{height:420px}}
+  .legend{
+    position:absolute;left:12px;bottom:12px;z-index:500;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(4px);
+    border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+    font-size:.74rem;color:var(--ink-soft);box-shadow:var(--shadow);max-width:230px;
+  }
+  .legend b{color:var(--ink)}
+  .legend .row{display:flex;align-items:center;gap:8px;margin-top:6px}
+  .legend .blob{border-radius:50%;background:var(--brand);opacity:.78;flex:none}
+  .map-wrap{position:relative}
+
+  /* ---------- Sidebar / Form ---------- */
+  .sidebar{display:flex;flex-direction:column;gap:18px}
+  .field{padding:14px 16px}
+  label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+  input[type=text]{
+    width:100%;font:inherit;font-size:.95rem;padding:11px 12px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel-2);color:var(--ink);outline:none;transition:border .15s,box-shadow .15s;
+  }
+  input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.15);background:#fff}
+
+  /* search dropdown */
+  .search-wrap{position:relative}
+  .results{
+    position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;
+    background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    max-height:300px;overflow:auto;display:none;
+  }
+  .results.open{display:block}
+  .result{
+    display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--panel-2);
+  }
+  .result:last-child{border-bottom:none}
+  .result:hover,.result.active{background:#f1f5f9}
+  .result .code{
+    font-weight:800;font-size:.82rem;background:var(--ink);color:#fff;border-radius:6px;
+    padding:3px 7px;letter-spacing:.04em;flex:none;min-width:46px;text-align:center;
+  }
+  .result .meta{min-width:0}
+  .result .meta .nm{font-size:.86rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .result .meta .ct{font-size:.74rem;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .result .add{margin-left:auto;color:var(--accent);font-weight:700;font-size:1.1rem;flex:none}
+  .result.disabled{opacity:.5;cursor:not-allowed}
+  .no-res{padding:12px;color:var(--ink-faint);font-size:.85rem;text-align:center}
+
+  /* selected wishes list */
+  .counter{font-size:.78rem;color:var(--ink-faint);font-weight:600}
+  .counter b{color:var(--brand-dark)}
+  ol.wishes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  ol.wishes:empty::after{
+    content:"Noch keine Hubs gewählt – nutze die Suche oben oder klicke auf die Karte.";
+    display:block;color:var(--ink-faint);font-size:.83rem;padding:10px 2px;line-height:1.4;
+  }
+  .wish{
+    display:flex;align-items:center;gap:9px;padding:8px 9px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel-2);
+  }
+  .wish.dragging{opacity:.5}
+  .wish .rank{
+    width:24px;height:24px;border-radius:7px;background:var(--accent);color:#fff;font-weight:800;font-size:.78rem;
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .wish .code{font-weight:800;font-size:.82rem;letter-spacing:.03em;flex:none;min-width:38px}
+  .wish .nm{font-size:.82rem;color:var(--ink-soft);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+  .wish .ctrls{display:flex;gap:2px;flex:none}
+  .iconbtn{
+    border:none;background:transparent;color:var(--ink-faint);cursor:pointer;border-radius:7px;
+    width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:.12s;
+  }
+  .iconbtn:hover{background:#e2e8f0;color:var(--ink)}
+  .iconbtn:disabled{opacity:.3;cursor:default;background:transparent}
+  .iconbtn.del:hover{background:#fee2e2;color:#dc2626}
+  .grip{cursor:grab;color:var(--ink-faint);font-size:.9rem;padding:0 2px;user-select:none}
+
+  .actions{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
+  button.primary{
+    width:100%;font:inherit;font-weight:700;font-size:.95rem;color:#fff;border:none;cursor:pointer;
+    background:linear-gradient(180deg,var(--brand) 0%,var(--brand-dark) 100%);
+    padding:13px;border-radius:11px;transition:transform .08s,filter .15s;box-shadow:0 4px 14px rgba(249,115,22,.35);
+  }
+  button.primary:hover{filter:brightness(1.05)}
+  button.primary:active{transform:translateY(1px)}
+  button.primary:disabled{background:#cbd5e1;box-shadow:none;cursor:not-allowed;filter:none}
+  .hint{font-size:.76rem;color:var(--ink-faint);text-align:center;line-height:1.4}
+  .toast{
+    font-size:.84rem;padding:10px 12px;border-radius:10px;display:none;line-height:1.4;
+  }
+  .toast.ok{display:block;background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+  .toast.err{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+
+  /* ---------- Leaderboard ---------- */
+  .board-wrap{grid-column:1 / -1}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  thead th{
+    text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);
+    padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700;
+  }
+  thead th.num,tbody td.num{text-align:right}
+  tbody td{padding:11px 14px;border-bottom:1px solid var(--panel-2);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel-2)}
+  .rankcell{font-weight:800;color:var(--ink-faint);width:34px}
+  .rankcell.top{color:var(--brand-dark)}
+  .hubcell{display:flex;align-items:center;gap:10px}
+  .hubcell .code{font-weight:800;background:var(--ink);color:#fff;border-radius:6px;padding:3px 7px;font-size:.78rem;letter-spacing:.03em}
+  .hubcell .nm{color:var(--ink-soft);font-size:.82rem}
+  .score{font-weight:800}
+  .bar{height:6px;border-radius:4px;background:var(--brand);opacity:.85;min-width:6px;margin-top:5px}
+  .players{display:flex;flex-wrap:wrap;gap:4px}
+  .chip{
+    font-size:.72rem;background:#e0f2fe;color:#075985;border:1px solid #bae6fd;border-radius:999px;
+    padding:2px 8px;white-space:nowrap;
+  }
+  .chip.me{background:#ffedd5;color:#9a3412;border-color:#fed7aa;font-weight:700}
+  .empty-board{padding:26px 16px;text-align:center;color:var(--ink-faint);font-size:.9rem}
+  .board-scroll{overflow-x:auto}
+
+  footer{max-width:1320px;margin:0 auto;padding:6px 22px 30px;color:#64748b;font-size:.76rem;text-align:center}
+  footer a{color:#94a3b8}
+  a{color:var(--accent-dark)}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div>
+    <h1><span class="logo">🛫</span> Hubwünsche</h1>
+    <p>Wähle deine <b>10 wichtigsten Flughafen-Hubs</b> (Priorität 1 = am wichtigsten). Je mehr Spieler einen Hub wünschen, desto größer leuchtet er auf der Karte.</p>
+  </div>
+  <div id="statusBadge" class="status"><span class="dot"></span><span id="statusText">…</span></div>
+</header>
+
+<main>
+  <!-- Karte -->
+  <section class="card" aria-label="Weltkarte">
+    <div class="card-head">
+      <h2>Weltkarte</h2>
+      <span class="sub" id="mapSub">0 Hubs gewünscht</span>
+    </div>
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="legend">
+        <b>Punktgröße = Beliebtheit</b>
+        <div class="row"><span class="blob" style="width:10px;height:10px"></span> wenige Stimmen</div>
+        <div class="row"><span class="blob" style="width:22px;height:22px"></span> viele Stimmen</div>
+        <div class="row" style="margin-top:8px"><span class="blob" style="width:13px;height:13px;background:var(--accent);opacity:.9"></span> deine Auswahl</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Eingabe-Sidebar -->
+  <aside class="sidebar">
+    <div class="card">
+      <div class="card-head"><h2>Deine Wünsche</h2></div>
+
+      <div class="field">
+        <label class="lbl" for="playerName">Spielername</label>
+        <input type="text" id="playerName" placeholder="z. B. Lufthansa-Fan" maxlength="40" autocomplete="off" />
+      </div>
+
+      <div class="field" style="padding-top:0">
+        <label class="lbl" for="search">Flughafen suchen &amp; hinzufügen</label>
+        <div class="search-wrap">
+          <input type="text" id="search" placeholder="Stadt, Name oder IATA-Code (z. B. ATH, Athen)…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="results" />
+          <div class="results" id="results" role="listbox"></div>
+        </div>
+      </div>
+
+      <div class="field" style="padding-top:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label class="lbl" style="margin:0">Deine 10 Prioritäten</label>
+          <span class="counter"><b id="wishCount">0</b> / 10</span>
+        </div>
+        <ol class="wishes" id="wishes"></ol>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="submitBtn">Wünsche speichern</button>
+        <div class="toast" id="toast"></div>
+        <div class="hint" id="formHint">Trag deinen Namen ein und wähle mindestens 1 Hub.</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Top 10 Tabelle -->
+  <section class="card board-wrap" aria-label="Top 10 Hubwünsche">
+    <div class="card-head">
+      <h2>Top 10 Hubwünsche</h2>
+      <span class="sub" id="boardSub"></span>
+    </div>
+    <div class="board-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="rankcell">#</th>
+            <th>Hub</th>
+            <th class="num">Punkte</th>
+            <th class="num">Spieler</th>
+            <th>Wer hat gewählt</th>
+          </tr>
+        </thead>
+        <tbody id="board"></tbody>
+      </table>
+      <div class="empty-board" id="boardEmpty">Noch keine Stimmen – sei der erste Spieler! ✈️</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Punkte: Priorität 1 = 10 Punkte … Priorität 10 = 1 Punkt. &nbsp;·&nbsp;
+  Flughafendaten: <a href="https://ourairports.com/data/" target="_blank" rel="noopener">OurAirports</a> (gemeinfrei). &nbsp;·&nbsp;
+  Karte: © OpenStreetMap, © CARTO.
+</footer>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Flughafen-Datensatz (window.AIRPORTS) -->
+<script src="airports.js"></script>
+<!-- App -->
+<script src="app.js"></script>
+</body>
+</html>
