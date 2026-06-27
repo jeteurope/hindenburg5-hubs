@@ -1,0 +1,12 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject secrets
+        run: sed -i "s|__SHEETS_URL__|${{ secrets.SHEETS_URL }}|g" app.js
+      - uses: actions/deploy-pages@v4
