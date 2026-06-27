@@ -1,15 +1,5 @@
-/* =========================================================================
-   Hubwünsche – App-Logik
-   - Reine statische Seite (GitHub Pages tauglich).
-   - Speicher: Google-Sheets Web-App (siehe CONFIG.WEB_APP_URL & apps-script.gs).
-   - Solange keine URL eingetragen ist, läuft alles lokal im "Demo-Modus"
-     (localStorage), damit du die Seite sofort testen kannst.
-   ========================================================================= */
-
 const CONFIG = {
-  // 👉 Hier die Web-App-URL aus Google Apps Script eintragen (siehe README.md).
-  //    Leer lassen = Demo-Modus (nur dieser Browser, kein echtes Multiplayer).
-  WEB_APP_URL: "https://script.google.com/macros/s/AKfycbzSamJifHyhToiEP0DcEjmaZd6O-CqXkJo8_HLIhI5aNI9eBZ_QRdhu4T808EdDv6CD/exec",
+  WEB_APP_URL: "__SHEETS_URL__",
 
   MAX_WISHES: 10,
 };
