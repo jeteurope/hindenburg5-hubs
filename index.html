@@ -12,30 +12,113 @@
 
 <style>
   :root{
-    --bg:#0f172a;            /* slate-900 */
+    --bg:#1E2A8C;            /* Hindenburg Dunkelblau */
     --panel:#ffffff;
-    --panel-2:#f8fafc;
-    --ink:#0f172a;
-    --ink-soft:#475569;
-    --ink-faint:#94a3b8;
-    --line:#e2e8f0;
-    --brand:#f97316;        /* orange-500 */
-    --brand-dark:#ea580c;
-    --accent:#0ea5e9;       /* sky-500 */
-    --accent-dark:#0284c7;
+    --panel-2:#f4f5fc;
+    --ink:#1E2A8C;
+    --ink-soft:#3d4a8a;
+    --ink-faint:#8e9ac8;
+    --line:#dde0f5;
+    --brand:#F03B6D;        /* Hindenburg Pink */
+    --brand-dark:#c9255a;
+    --accent:#2DCFB3;       /* Hindenburg Teal */
+    --accent-dark:#1aab93;
     --good:#16a34a;
-    --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.08);
+    --shadow:0 1px 2px rgba(30,42,140,.07),0 8px 24px rgba(30,42,140,.12);
     --radius:14px;
     --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
+  html{background:#10196e} /* Fallback falls bg-anim noch nicht gerendert */
   body{
     font-family:var(--font);
     color:var(--ink);
-    background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);
+    background:transparent;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Animierter Aurora-Hintergrund ---------- */
+  .bg-anim{
+    position:fixed;inset:0;z-index:-1;overflow:hidden;
+    background:linear-gradient(160deg,#10196e 0%,#27166b 100%);
+  }
+  .blob{
+    position:absolute;border-radius:50%;
+    will-change:transform;
+  }
+  /* Großer blauer Hintergrund-Blob oben links */
+  .blob-1{
+    width:80vw;height:80vw;
+    background:radial-gradient(circle at center,#3B2BB5 0%,transparent 70%);
+    top:-25%;left:-20%;
+    animation:b1 20s ease-in-out infinite;
+  }
+  /* Violetter Blob oben rechts */
+  .blob-2{
+    width:70vw;height:70vw;
+    background:radial-gradient(circle at center,#7B32C4 0%,transparent 70%);
+    top:-15%;right:-15%;
+    animation:b2 26s ease-in-out infinite;
+  }
+  /* Pink-Blob unten rechts */
+  .blob-3{
+    width:60vw;height:60vw;
+    background:radial-gradient(circle at center,#F03B6D 0%,transparent 68%);
+    bottom:-15%;right:5%;
+    opacity:.55;
+    animation:b3 22s ease-in-out infinite;
+  }
+  /* Teal-Blob unten links */
+  .blob-4{
+    width:50vw;height:50vw;
+    background:radial-gradient(circle at center,#2DCFB3 0%,transparent 68%);
+    bottom:-10%;left:5%;
+    opacity:.35;
+    animation:b4 18s ease-in-out infinite;
+  }
+  /* Kleiner Pink-Highlight Blob oben Mitte */
+  .blob-5{
+    width:35vw;height:35vw;
+    background:radial-gradient(circle at center,#F03B6D 0%,transparent 65%);
+    top:10%;left:40%;
+    opacity:.3;
+    animation:b5 30s ease-in-out infinite;
+  }
+  /* Blur-Overlay der Blobs */
+  .blob-layer{
+    position:absolute;inset:0;
+    backdrop-filter:blur(0px); /* kein blur hier, unten */
+  }
+  /* Wir blurren jeden Blob einzeln */
+  .blob{filter:blur(72px)}
+
+  @keyframes b1{
+    0%,100%{transform:translate(0,0) scale(1)}
+    30%    {transform:translate(12%,18%) scale(1.12)}
+    65%    {transform:translate(-8%,28%) scale(.92)}
+  }
+  @keyframes b2{
+    0%,100%{transform:translate(0,0) scale(1)}
+    25%    {transform:translate(-18%,12%) scale(1.08)}
+    60%    {transform:translate(8%,-18%) scale(1.15)}
+  }
+  @keyframes b3{
+    0%,100%{transform:translate(0,0) scale(1)}
+    40%    {transform:translate(-22%,-14%) scale(1.18)}
+    75%    {transform:translate(10%,-8%) scale(.88)}
+  }
+  @keyframes b4{
+    0%,100%{transform:translate(0,0) scale(1)}
+    35%    {transform:translate(20%,-20%) scale(1.2)}
+    70%    {transform:translate(-10%,10%) scale(.9)}
+  }
+  @keyframes b5{
+    0%,100%{transform:translate(-50%,0) scale(1)}
+    20%    {transform:translate(-40%,25%) scale(1.25)}
+    50%    {transform:translate(-60%,10%) scale(.8)}
+    80%    {transform:translate(-35%,30%) scale(1.1)}
   }
 
   /* ---------- Header ---------- */
@@ -50,7 +133,7 @@
     display:flex;align-items:center;gap:10px;
   }
   header.app h1 .logo{font-size:1.5rem}
-  header.app p{margin:6px 0 0;color:#cbd5e1;font-size:.95rem;max-width:640px}
+  header.app p{margin:6px 0 0;color:#c9d0f0;font-size:.95rem;max-width:640px}
   .status{
     font-size:.78rem;color:#cbd5e1;background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;white-space:nowrap;
@@ -206,6 +289,15 @@
 </style>
 </head>
 <body>
+
+<div class="bg-anim" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+  <div class="blob blob-5"></div>
+</div>
+
 
 <header class="app">
   <div>
