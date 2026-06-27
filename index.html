@@ -30,95 +30,27 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  html{background:#10196e} /* Fallback falls bg-anim noch nicht gerendert */
   body{
     font-family:var(--font);
     color:var(--ink);
-    background:transparent;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
+    /* ── Fluid-Gradient-Animation ── */
+    background:linear-gradient(-45deg,
+      #0f1875,
+      #3B1A8C,
+      #6B2FA0,
+      #F03B6D,
+      #2DCFB3,
+      #3B1A8C,
+      #0f1875);
+    background-size:400% 400%;
+    animation:auroraFlow 10s ease infinite;
   }
-
-  /* ---------- Animierter Aurora-Hintergrund ---------- */
-  .bg-anim{
-    position:fixed;inset:0;z-index:-1;overflow:hidden;
-    background:linear-gradient(160deg,#10196e 0%,#27166b 100%);
-  }
-  .blob{
-    position:absolute;border-radius:50%;
-    will-change:transform;
-  }
-  /* Großer blauer Hintergrund-Blob oben links */
-  .blob-1{
-    width:80vw;height:80vw;
-    background:radial-gradient(circle at center,#3B2BB5 0%,transparent 70%);
-    top:-25%;left:-20%;
-    animation:b1 20s ease-in-out infinite;
-  }
-  /* Violetter Blob oben rechts */
-  .blob-2{
-    width:70vw;height:70vw;
-    background:radial-gradient(circle at center,#7B32C4 0%,transparent 70%);
-    top:-15%;right:-15%;
-    animation:b2 26s ease-in-out infinite;
-  }
-  /* Pink-Blob unten rechts */
-  .blob-3{
-    width:60vw;height:60vw;
-    background:radial-gradient(circle at center,#F03B6D 0%,transparent 68%);
-    bottom:-15%;right:5%;
-    opacity:.55;
-    animation:b3 22s ease-in-out infinite;
-  }
-  /* Teal-Blob unten links */
-  .blob-4{
-    width:50vw;height:50vw;
-    background:radial-gradient(circle at center,#2DCFB3 0%,transparent 68%);
-    bottom:-10%;left:5%;
-    opacity:.35;
-    animation:b4 18s ease-in-out infinite;
-  }
-  /* Kleiner Pink-Highlight Blob oben Mitte */
-  .blob-5{
-    width:35vw;height:35vw;
-    background:radial-gradient(circle at center,#F03B6D 0%,transparent 65%);
-    top:10%;left:40%;
-    opacity:.3;
-    animation:b5 30s ease-in-out infinite;
-  }
-  /* Blur-Overlay der Blobs */
-  .blob-layer{
-    position:absolute;inset:0;
-    backdrop-filter:blur(0px); /* kein blur hier, unten */
-  }
-  /* Wir blurren jeden Blob einzeln */
-  .blob{filter:blur(72px)}
-
-  @keyframes b1{
-    0%,100%{transform:translate(0,0) scale(1)}
-    30%    {transform:translate(12%,18%) scale(1.12)}
-    65%    {transform:translate(-8%,28%) scale(.92)}
-  }
-  @keyframes b2{
-    0%,100%{transform:translate(0,0) scale(1)}
-    25%    {transform:translate(-18%,12%) scale(1.08)}
-    60%    {transform:translate(8%,-18%) scale(1.15)}
-  }
-  @keyframes b3{
-    0%,100%{transform:translate(0,0) scale(1)}
-    40%    {transform:translate(-22%,-14%) scale(1.18)}
-    75%    {transform:translate(10%,-8%) scale(.88)}
-  }
-  @keyframes b4{
-    0%,100%{transform:translate(0,0) scale(1)}
-    35%    {transform:translate(20%,-20%) scale(1.2)}
-    70%    {transform:translate(-10%,10%) scale(.9)}
-  }
-  @keyframes b5{
-    0%,100%{transform:translate(-50%,0) scale(1)}
-    20%    {transform:translate(-40%,25%) scale(1.25)}
-    50%    {transform:translate(-60%,10%) scale(.8)}
-    80%    {transform:translate(-35%,30%) scale(1.1)}
+  @keyframes auroraFlow{
+    0%  {background-position:0% 50%}
+    50% {background-position:100% 50%}
+    100%{background-position:0% 50%}
   }
 
   /* ---------- Header ---------- */
@@ -290,13 +222,6 @@
 </head>
 <body>
 
-<div class="bg-anim" aria-hidden="true">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
-  <div class="blob blob-4"></div>
-  <div class="blob blob-5"></div>
-</div>
 
 
 <header class="app">
